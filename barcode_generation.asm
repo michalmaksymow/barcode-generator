@@ -1,6 +1,9 @@
 .data
-size_px:	.word 0
-input:		.space 82
+size_px:	.word 	0	# Width of narrowest bar (in pixels)
+input:		.space 	82	# Text to be encoded
+checksum:	.word	0	# Used to calculate check symbol (check_symbol = checksum%43)
+checksymbol:	.byte	'\0'	# Char put at the end of string
+
 prompt1:	.asciiz	"Please provide width of narrowest bar (in pixels) >"
 prompt2:	.asciiz "\nPlease provide the text to be encoded >"
 
@@ -12,6 +15,11 @@ err1:		.asciiz "Invalid size (less then or equal to zero)!"
 err2:		.asciiz "Invalid input string! (empty string)"
 err3:		.asciiz "Invalid input string! (contains a character that cannot be encoded)"
 
+values:		.byte 	'0' '1' '2' '3' '4' '5' '6' '7' '8' '9'
+			'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J'
+			'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T'
+			'U' 'V' 'W' 'X' 'Y' 'Z' '-' '.' ' ' '$'
+			'/' '+' '%' '*'
 .text
 main:
 	# Display prompt about size
@@ -58,9 +66,15 @@ main:
 	la 	$a0, input	# Set address of 'out2' string to be displayed
 	jal 	_print_str
 
-	# Inform about beginning of encoding process
-	la 	$a0, out3	# Set address of 'out2' string to be displayed
-	jal 	_print_str
+	# Compute checksum
+	
+	
+	
+# TODO: 
+# 1. Compute checksymbol
+# 2. Transform string to *(string)(checksymbol)*
+# 3. Compute size in pixels
+# 4. Check if it will fit the 600x50
 	
 	# Go to exit of program
 	b 	exit
@@ -90,6 +104,28 @@ exit:
 	syscall
 
 # =================================================================================== PROCEDURES
+
+# Computes checksum of a given string
+# Arguments: 	$a0: (address of a string used in computation)
+# Returen:	$v0: (checksum) [int]
+_compute_checksum:
+	move	$t0, $a0	# Set address of first char of string to $t0
+	li	$v0, 0
+	
+	lbu	$t1, ($t0)	# Copy first character to $t1 (first eight effective bits)
+	la	$t2, values	# Load address of values array to $t2
+	li 	$t7, 0		# Current values array offset
+	
+__compute_checksum_sv:		# Search char value loop
+	beq	$t1, ($t2), __compute_checksum_found
+	addiu	$t2, $t2, 1	# Move pointer by 1 (to next char)
+	add 	$t7, $t7, 1	# Increment value
+	b	__compute_checksum_sv
+__compute_checksum_found:
+	add	$v0, $v0, $t7	# $v0 += $t7
+
+
+
 
 # Prints out a specified string
 # Arguments: 	$a0: (address of a string to be printed)
@@ -145,7 +181,7 @@ __is_empty_false:
 # Checks if a string contains any characters that cannot be encoded in Code39
 # Accepted chars: 0-9, A-Z (uppercase), -, ., [whitespace], $, /, +, %
 # Arguments: 	$a0: (address of a buffer in which the string is saved)
-# Returns:	$v0 (1 [true] if string is incorrect) [int] 
+# Returns:	$v0: (1 [true] if string is incorrect) [int] 
 _check_incorrect:
 	move	$t0, $a0	# Set address of first char of string to $t0
 	li 	$v0, 0		# Set default return value to 0 (false)
