@@ -1,15 +1,16 @@
 .data
 size_px:	.word 	0	# Width of narrowest bar (in pixels)
 input:		.space 	82	# Text to be encoded
-checksum:	.word	0	# Used to calculate check symbol (check_symbol = checksum%43)
-checksymbol:	.byte	'\0'	# Char put at the end of string
+checksum:	.word	0	# Used to calculate check symbol (check_symbol = checksum % 43)
+checksymbol:	.word	0	# Checksymbol value
 
 prompt1:	.asciiz	"Please provide width of narrowest bar (in pixels) >"
 prompt2:	.asciiz "\nPlease provide the text to be encoded >"
 
 out1:		.asciiz "Choosen size (in px) >"
 out2:		.asciiz "Text to be encoded >"
-out3:		.asciiz "Encoding text..."
+out3:		.asciiz "Checksum >"
+out4:		.asciiz "\nChecksymbol value>"
 
 err1:		.asciiz "Invalid size (less then or equal to zero)!"
 err2:		.asciiz "Invalid input string! (empty string)"
@@ -69,15 +70,31 @@ main:
 	# Compute checksum
 	la 	$a0, input	# Set address of string buffer
 	jal	_compute_checksum
-	sw	$v0, checksum	# Store contents of $v0 to 'size_px' variable
-	lw	$a0, checksum
-	jal	_print_int	# TESTING
+	sw	$v0, checksum	# Store contents of $v0 to 'checksum' variable
+	
+	# Output checksum
+	la 	$a0, out3	# Set address of 'out3' string to be displayed
+	jal 	_print_str	
+	lw	$a0, checksum	# Set value of word 'checksum' to be displayed
+	jal 	_print_int
+	
+	# Compute checksymbol value (checksum % 43)
+	lw	$a0, checksum	# Load word from checksum to $a0
+	li	$a1, 43		# Set value of $a1 to 43
+	jal 	_mod
+	sw	$v0, checksymbol	# Save returned value on checksymbol
+	
+	# Output checksymbol value
+	la 	$a0, out4	# Set address of 'out4' string to be displayed
+	jal 	_print_str
+	lw	$a0, checksymbol
+	jal	_print_int
+	
 	
 # TODO: 
-# 1. Compute checksymbol
-# 2. Transform "(string)" to "*(string)(checksymbol)*"
-# 3. Compute size in pixels
-# 4. Check if it will fit the 600x50
+# 1. Transform each char in the string to a numerical value
+# 2. Compute size in pixels (with 2 x '*' and checksymbol appended)
+# 3. Check if it will fit the 600x50
 	
 	# Go to exit of program
 	b 	exit
@@ -107,9 +124,19 @@ exit:
 
 # =================================================================================== PROCEDURES
 
+# Computes remainder of division 
+# Arguments: 	$a0: (dividend) [int]
+#		$a1: (divisor)	[int]
+# Return:	$v0: (dividend mod divisor) [int]
+_mod:
+	div 	$a0, $a1	# Divide $a0 by $a1
+	mfhi	$v0		# Copy value of high register to $v0 (return value)
+	jr	$ra		# Jump back to PC to continue execcution
+	
+
 # Computes checksum of a given string
 # Arguments: 	$a0: (address of a string used in computation)
-# Returen:	$v0: (checksum) [int]
+# Return:	$v0: (checksum) [int]
 _compute_checksum:
 	move	$t0, $a0	# Set address of first char of string to $t0
 	li	$v0, 0		# Set return value to zero (temporary)
@@ -129,7 +156,7 @@ __compute_checksum_found:
 	addiu	$t0, $t0, 1	# Move pointer $t0 by 1 (to next char)
 	b	__compute_checksum_nextchar
 __compute_checksum_fin:
-	jr	$ra
+	jr	$ra		# Jump back to PC to continue exec
 
 
 # Prints out a specified string
