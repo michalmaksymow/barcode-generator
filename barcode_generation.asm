@@ -3,24 +3,11 @@ size_px:	.word 	0	# Width of narrowest bar (in pixels)
 input:		.space 	82	# Text to be encoded
 checksum:	.word	0	# Used to calculate check symbol (check_symbol = checksum % 43)
 checksymbol:	.word	0	# Checksymbol value
+encoded:	.space	84	# Code 39 encoded char values with start, stop and check symbols appended
 
-prompt1:	.asciiz	"Please provide width of narrowest bar (in pixels) >"
-prompt2:	.asciiz "\nPlease provide the text to be encoded >"
+.include "messages.asm"
+.include "values.asm"
 
-out1:		.asciiz "Choosen size (in px) >"
-out2:		.asciiz "Text to be encoded >"
-out3:		.asciiz "Checksum >"
-out4:		.asciiz "\nChecksymbol value>"
-
-err1:		.asciiz "Invalid size (less then or equal to zero)!"
-err2:		.asciiz "Invalid input string! (empty string)"
-err3:		.asciiz "Invalid input string! (contains a character that cannot be encoded)"
-
-values:		.byte 	'0' '1' '2' '3' '4' '5' '6' '7' '8' '9'
-			'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J'
-			'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T'
-			'U' 'V' 'W' 'X' 'Y' 'Z' '-' '.' ' ' '$'
-			'/' '+' '%' '*'
 .text
 main:
 	# Display prompt about size
@@ -89,51 +76,89 @@ main:
 	jal 	_print_str
 	lw	$a0, checksymbol
 	jal	_print_int
+
+# "Should have encoded first and then just sum up to get checksum"
+# ~ Michal 
+	# Encode string
+	la	$a0, input
+	la	$a1, encoded
+	jal 	_encode
 	
 	
 # TODO: 
 # 1. Transform each char in the string to a numerical value
 # 2. Compute size in pixels (with 2 x '*' and checksymbol appended)
 # 3. Check if it will fit the 600x50
+# 4. Start bmp generation
 	
 	# Go to exit of program
 	b 	exit
 
 
-	
-# Inform about incorrect input size and exit
-invalid_size:
-	la	$a0, err1	# Set string address for printing
-	jal 	_print_str
-	b	exit		# Go to exit of program
-# Inform about incorrect input string and exit
-invalid_string_1:
-	la	$a0, err2	# Set string address for printing
-	jal 	_print_str
-	b	exit		# Go to exit of program
-invalid_string_2:
-	la	$a0, err3	# Set string address for printing
-	jal 	_print_str
-	b	exit		# Go to exit of program
 
-	
-exit:
-	# Terminate program
-	li	$v0, 10			# Set function number for terminate_execution
-	syscall
 
 # =================================================================================== PROCEDURES
 
+# Encodes provided string with Code39 values
+# Arguments: 	$a0: (address of a string to be encoded)
+#		$a1: (address of output byte array)
+# Returns:	void
+_encode:	
+# $t0 -> points at char of a string being encoded
+# $t1 -> points at byte of encoded values array
+# $t2 -> stores value of a char that is currently encoded
+# $t3 -> points at char of values array
+# $t4 -> stores offset of values array
+# $t5 -> stores value of char that the encoded char is currently compared to
+# $t6 -> stores intermediate values
+	move	$t0, $a0	# Set address of first char of string to $t0
+	move	$t1, $a1	# Set address of first byte of output to $t1
+	# Push start character
+	li	$t3, 43
+	sb 	$t3, ($t1)	# Add star symbol, which is * (43 encoded)
+	addiu	$t1, $t1, 1	# Move pointer $t1 by 1 (to next byte)
+	
+	# String encoding
+__encode_nextchar:
+	lbu	$t2, ($t0)	# Copy character to $t2 (first eight effective bits)
+	bltu	$t2, ' ', __encode_fin	# Go to finish branch if read char is less then ' ' whitespace (probably some null terminating character)
+	la	$t3, values	# Load address of values array to $t2
+	li 	$t4, 0		# Current values array offset
+__encode_sv: 			# Search value (inner loop)
+	lbu   	$t5, ($t3)	# Load char stored at $t3 to $t5
+	beq	$t2, $t5, __encode_found
+	addiu	$t3, $t3, 1	# Move pointer $t3 by 1 (to next char)
+	add 	$t4, $t4, 1	# Increment offset value
+	b	__encode_sv
+__encode_found:
+	sb 	$t4, ($t1)	# Stores encoded symbol value at specified address
+	addiu	$t0, $t0, 1	# Move pointer $t0 by 1 (to next char)
+	addiu	$t1, $t1, 1	# Move pointer $t1 by 1 (to next byte)
+	b	__encode_nextchar
+__encode_fin:
+	# Push checksymbol value
+	lbu	$t6, checksymbol	# Load checksum value
+	sb 	$t6, ($t1)	# Store checksum value at given address
+	addiu	$t1, $t1, 1	# Move pointer $t1 by 1 (to next byte)
+	# Push stop symbol
+	li	$t6, 43
+	sb 	$t6, ($t1)	# Add star symbol, which is * (43 encoded)
+	
+	jr	$ra
+	
+	
+#
+#
 # Computes remainder of division 
 # Arguments: 	$a0: (dividend) [int]
 #		$a1: (divisor)	[int]
-# Return:	$v0: (dividend mod divisor) [int]
+# Return:	$v0: (remainder of division - dividend mod divisor) [int]
 _mod:
 	div 	$a0, $a1	# Divide $a0 by $a1
 	mfhi	$v0		# Copy value of high register to $v0 (return value)
 	jr	$ra		# Jump back to PC to continue execcution
-	
-
+#	
+#
 # Computes checksum of a given string
 # Arguments: 	$a0: (address of a string used in computation)
 # Return:	$v0: (checksum) [int]
@@ -157,8 +182,8 @@ __compute_checksum_found:
 	b	__compute_checksum_nextchar
 __compute_checksum_fin:
 	jr	$ra		# Jump back to PC to continue exec
-
-
+#
+#
 # Prints out a specified string
 # Arguments: 	$a0: (address of a string to be printed)
 # Returns:	void
@@ -166,8 +191,8 @@ _print_str:
 	li 	$v0, 4		# System call for print_string
 	syscall
 	jr	$ra		# Jump back to PC to continue exec
-	
-	
+#	
+#
 # Prints out a specified integer
 # Arguments: 	$a0: (integer to be printed)
 # Returns:	void
@@ -175,8 +200,8 @@ _print_int:
 	li	$v0, 1		# System call for print_integer
 	syscall
 	jr	$ra		# Jump back to PC to continue exec
-
-
+#
+#
 # Reads a string from input
 # Arguments: 	$a0: (address of a buffer in which read string will be saved) 
 #		$a1: (maximum number of characters to be read) [int]
@@ -185,8 +210,8 @@ _read_str:
 	li 	$v0, 8		# System call for read_string
 	syscall
 	jr	$ra		# Jump back to PC to continue exec
-	
-	
+#	
+#
 # Reads an int from input
 # Arguments: 	none()
 # Returns:	$v0 (read integer) [int]
@@ -194,8 +219,8 @@ _read_int:
 	li 	$v0, 5		# System call for read_integer and store read integer at $v0
 	syscall
 	jr	$ra		# Jump back to PC to continue exec
-	
-	
+#	
+#
 # Checks if a string is empty
 # Arguments: 	$a0: (address of a buffer in which the string is saved) 
 # Returns:	$v0 (1 [true] if string is empty) [int] 
@@ -208,8 +233,8 @@ _is_empty:
 __is_empty_false:
 	li 	$v0, 0		# Set return value to 0 (false)
 	jr	$ra		# Jump back to PC to continue exec
-	
-
+#	
+#
 # Checks if a string contains any characters that cannot be encoded in Code39
 # Accepted chars: 0-9, A-Z (uppercase), -, ., [whitespace], $, /, +, %
 # Arguments: 	$a0: (address of a buffer in which the string is saved)
@@ -237,26 +262,32 @@ __check_incorrect_true:
 	li 	$v0, 1		# Set return value to 1 (true)
 __check_incorrect_fin:
 	jr	$ra		# Jump back to PC to continue exec
+#
+#	
+
+	
+#  =================================================================================== ERROR INFORMATION BRANCHES
+
+# Inform about incorrect input size and exit
+invalid_size:
+	la	$a0, err1	# Set string address for printing
+	jal 	_print_str
+	b	exit		# Go to exit of program
+# Inform about incorrect input string and exit
+invalid_string_1:
+	la	$a0, err2	# Set string address for printing
+	jal 	_print_str
+	b	exit		# Go to exit of program
+invalid_string_2:
+	la	$a0, err3	# Set string address for printing
+	jal 	_print_str
+	b	exit		# Go to exit of program
 	
 	
 	
+# =================================================================================== EXIT
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+exit:
+	# Terminate program
+	li	$v0, 10			# Set function number for terminate_execution
+	syscall
