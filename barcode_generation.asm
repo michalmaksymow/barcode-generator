@@ -67,12 +67,15 @@ main:
 	jal 	_print_str
 
 	# Compute checksum
-	
-	
+	la 	$a0, input	# Set address of string buffer
+	jal	_compute_checksum
+	sw	$v0, checksum	# Store contents of $v0 to 'size_px' variable
+	lw	$a0, checksum
+	jal	_print_int	# TESTING
 	
 # TODO: 
 # 1. Compute checksymbol
-# 2. Transform string to *(string)(checksymbol)*
+# 2. Transform "(string)" to "*(string)(checksymbol)*"
 # 3. Compute size in pixels
 # 4. Check if it will fit the 600x50
 	
@@ -86,7 +89,6 @@ invalid_size:
 	la	$a0, err1	# Set string address for printing
 	jal 	_print_str
 	b	exit		# Go to exit of program
-
 # Inform about incorrect input string and exit
 invalid_string_1:
 	la	$a0, err2	# Set string address for printing
@@ -110,21 +112,24 @@ exit:
 # Returen:	$v0: (checksum) [int]
 _compute_checksum:
 	move	$t0, $a0	# Set address of first char of string to $t0
-	li	$v0, 0
-	
-	lbu	$t1, ($t0)	# Copy first character to $t1 (first eight effective bits)
+	li	$v0, 0		# Set return value to zero (temporary)
+__compute_checksum_nextchar:	# Next character of a string loop (outer loop)
+	lbu	$t1, ($t0)	# Copy character to $t1 (first eight effective bits)
+	bltu	$t1, ' ', __compute_checksum_fin	# Go to fin branch if read char is less then ' ' whitespace (probably some null terminating character)
 	la	$t2, values	# Load address of values array to $t2
 	li 	$t7, 0		# Current values array offset
-	
-__compute_checksum_sv:		# Search char value loop
-	beq	$t1, ($t2), __compute_checksum_found
+__compute_checksum_sv:		# Search char value loop (inner loop)
+	lbu   	$t3, ($t2)	# Load char stored at $t2 to $t3
+	beq	$t1, $t3, __compute_checksum_found
 	addiu	$t2, $t2, 1	# Move pointer by 1 (to next char)
 	add 	$t7, $t7, 1	# Increment value
 	b	__compute_checksum_sv
 __compute_checksum_found:
 	add	$v0, $v0, $t7	# $v0 += $t7
-
-
+	addiu	$t0, $t0, 1	# Move pointer $t0 by 1 (to next char)
+	b	__compute_checksum_nextchar
+__compute_checksum_fin:
+	jr	$ra
 
 
 # Prints out a specified string
