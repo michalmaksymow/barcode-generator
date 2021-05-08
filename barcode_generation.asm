@@ -4,9 +4,11 @@ input:		.space 	82	# Text to be encoded
 checksum:	.word	0	# Used to calculate check symbol (check_symbol = checksum % 43)
 checksymbol:	.word	0	# Checksymbol value
 encoded:	.space	84	# Code 39 encoded Character Codes values with start, stop and check symbols appended
+fullsize:	.word	0	# Width of generated barcode (to check if it will fit)
 
 .include "messages.asm"
 .include "values.asm"
+.include "character_codes.asm"
 
 .text
 main:
@@ -84,12 +86,16 @@ main:
 	la	$a1, encoded
 	jal 	_encode
 	
+	# Compute generated barcode width (check if it will fit fixed 600x50 size)
+	la	$a0, encoded
+	lw 	$a1, size_px
+	jal	_compute_width
+	sw	$v0, fullsize
 	
 # TODO: 
 # 1. Transform each char in the string to a numerical value -- DONE
-# 2. Compute width in pixels
-# 3. Check if it will fit the 600x50
-# 4. Start bmp generation
+# 2. Compute width in pixels & Check if it will fit the 600x50
+# 3. Start bmp generation
 	
 	# Go to exit of program
 	b 	exit
@@ -99,7 +105,35 @@ main:
 
 # =================================================================================== PROCEDURES
 
+# Computes barcode width
+#
+# Arguments: 	$a0: (address of an encoded string) [byte array address]
+#		$a1: (size of narrow bar) [int]
+#
+# Returns:	$v0: (size of barcode) [int]
+_compute_width:
+# $t0 -> points at byte of a encoded string
+# $t1 -> narrow bar size in px
+# $t2 -> wide bar size (= narrow bar * 3)
+# $t3 -> current encoded char value
+# $t7 -> auxiliary
 
+	# Setup initial return value 
+	li	$v0, 0
+	# Setup bar sizeds (narrow and wide)
+	move	$t0, $a0	# Move address of %a0 to %t0
+	move	$t1, $a1	# Move value of %a1 to %t1
+	li	$t7, 3		# Set $t7 to 3
+	mult	$t1, $t7	# Multiplies narrow_bar*3
+	mflo	$t2		# Sets content of $t2 to lower product register (I assume that higher will not be used)
+	
+	# Add "*" to the width and one narrow space (3 x wide + 7 x narrow)
+	
+	
+	
+	lbu	$t3, ($t0)	# Copy character to $t2 (first eight effective bits)
+	
+	jr	$ra
 
 
 
