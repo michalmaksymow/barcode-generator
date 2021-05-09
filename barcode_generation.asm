@@ -5,6 +5,7 @@ checksum:	.word	0	# Used to calculate check symbol (check_symbol = checksum % 43
 checksymbol:	.word	0	# Checksymbol value
 encoded:	.space	84	# Code 39 encoded Character Codes values with start, stop and check symbols appended
 width:		.word	0	# Width of generated barcode (to check if it will fit)
+line:		.space	1800	# Colors on one line of the barcode
 
 .include "messages.asm"
 .include "values.asm"
@@ -86,7 +87,7 @@ main:
 	la	$a1, encoded
 	jal 	_encode
 	
-	# Compute generated barcode width (check if it will fit fixed 600x50 size)
+	# Compute generated barcode width
 	la	$a0, encoded
 	lw 	$a1, size_px
 	jal	_compute_width
@@ -95,23 +96,36 @@ main:
 	# Print information about expected barcode width
 	la 	$a0, out5	# Set address of 'out5' string to be displayed
 	jal 	_print_str
-	lw	$a0, width
+	lw	$a0, width	# Set value of 'width' word to be displayed
 	jal	_print_int
 	
+	# Check if it will fit fixed 600x50 size
+	lw	$a0, width
+	li	$a1, 600
+	jal	_less_or_equal
+	beqz 	$v0, invalid_width
+	
+	# Initialise barcode line to white (each pixel to 0xFF) 
+	la	$a0, line
+	jal	_init_line
+	# Now, whole pixel line is initialised to white
+	
+	
+	
 # TODO: 
-# 1. Transform each char in the string to a numerical value -- DONE
-# 2. Compute width in pixels -- DONE
-# 3. Check if it will fit the 600x50
-# 4. Start bmp generation
+# 1. Transform each char in the string to a numerical value 	-- DONE
+# 2. Compute width in pixels 					-- DONE
+# 3. Check if it will fit the 600x50				-- DONE
+# 4. Start bmp generation					
 	
 	# Go to the exit of the program
 	b 	exit
 
 
-
-
 # =================================================================================== PROCEDURES
 
+.include "_init_line.asm"
+.include "_less_or_equal.asm"
 .include "_compute_width.asm"
 .include "_encode.asm"
 .include "_mod.asm"
@@ -137,6 +151,11 @@ invalid_string_1:
 	b	exit		# Go to exit of program
 invalid_string_2:
 	la	$a0, err3	# Set string address for printing
+	jal 	_print_str
+	b	exit		# Go to exit of program
+# Inform about incorrect width
+invalid_width:
+	la	$a0, err4	# Set string address for printing
 	jal 	_print_str
 	b	exit		# Go to exit of program
 	
