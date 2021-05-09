@@ -172,7 +172,7 @@ nextchar_loop_fin:
 	# Copy painted line on each row of BMP
 	la	$s0, line
 	la	$s1, image
-	addiu	$s1, $s1, 123	# Offset bmp pointer to first pixel
+	addiu	$s1, $s1, 122	# Offset bmp pointer to first pixel
 	
 	li	$s2, 50
 copy_line:
@@ -187,7 +187,10 @@ copy_line:
 copy_line_fin:
 	
 	# Save file
-	
+	la	$a0, filename
+	la	$a1, image
+	li	$a2, 90122
+	jal 	_save_file
 	
 	# Go to the exit of the program
 	b 	exit
@@ -195,6 +198,7 @@ copy_line_fin:
 
 # =================================================================================== PROCEDURES
 
+.include "_save_file.asm"	
 .include "_mem_copy.asm"
 .include "_load_file.asm"
 .include "_put_color.asm"
@@ -240,6 +244,15 @@ cannot_read:
 	b	exit		# Go to exit of program
 error_reading:
 	la	$a0, err6	# Set string address for printing
+	jal 	_print_str
+	b	exit		# Go to exit of program
+	
+cannot_open_write:
+	la	$a0, err7	# Set string address for printing
+	jal 	_print_str
+	b	exit		# Go to exit of program
+error_writing:
+	la	$a0, err8	# Set string address for printing
 	jal 	_print_str
 	b	exit		# Go to exit of program
 # =================================================================================== EXIT

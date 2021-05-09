@@ -13,6 +13,8 @@ err3:		.asciiz "Invalid input string! (contains a character that cannot be encod
 err4:		.asciiz "\nInvalid barcode width! (will not fit 600x50px)"
 err5:		.asciiz "\nCannot read file 'prepared.bmp'!"
 err6:		.asciiz "\nInvalid amount of chracters read!"
+err7:		.asciiz "\nCannot open 'output.bmp' for write!"
+err8:		.asciiz "\nInvalid amount of characters written!"
 
 loadname:	.asciiz "util/prepared.bmp"
-filename:	.asciiz "output.bmp"
+filename:	.asciiz "out/output.bmp"
