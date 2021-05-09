@@ -6,6 +6,7 @@ checksymbol:	.word	0	# Checksymbol value
 encoded:	.space	84	# Code 39 encoded Character Codes values with start, stop and check symbols appended
 width:		.word	0	# Width of generated barcode (to check if it will fit)
 line:		.space	1800	# Colors on one line of the barcode
+image:		.space	90122	# 600 x 50 .bmp image
 
 .include "messages.asm"
 .include "values.asm"
@@ -115,7 +116,7 @@ main:
 # $s0 -> points to currently processed char
 # $s1 -> points to currently processed pixel
 # $s6 -> stores size of one painted char in bytes(px*3) - (3 * wide_bar + 6 * narrow_bar)*3
-# $s7 -> stores size of one space between chars
+# $s7 -> stores size of one space between chars in bytes (narrow space)*3
 	li	$s6, 0
 	lw	$t0, size_px	# $t0 = narrow_bar
 	li 	$t1, 6		
@@ -130,6 +131,10 @@ main:
 	add	$s6, $s6, $t2	# $s6 = 3 * wide_bar + 6 * narrow_bar
 	mult	$s6, $t1
 	mflo	$s6		# (3 * wide_bar + 6 * narrow_bar)*3
+	lw	$t0, size_px
+	li	$t1, 3
+	mult	$t0, $t1
+	mflo	$s7
 	
 	la 	$s0, encoded	# Point to currently processed char
 	la	$s1, line	# Point to currently processed pixel
@@ -139,15 +144,39 @@ main:
 	move 	$a1, $t0
 	jal	_put_color
 	addiu 	$s0, $s0, 1	# Move pointer to process next character 
-	add	$s1, $s1, 2
+	add	$s1, $s1, $s6	# Move currently processed pixel by one character
+	add	$s1, $s1, $s7	# Move currently processed pixel by one narrow space
+nextchar_loop:
+	lbu	$t0, ($s0)
+	beq	$t0, 43, nextchar_loop_fin
+	move	$a0, $s1	
+	move 	$a1, $t0
+	jal	_put_color
+	addiu 	$s0, $s0, 1	# Move pointer to process next character 
+	add	$s1, $s1, $s6	# Move currently processed pixel by one character
+	add	$s1, $s1, $s7	# Move currently processed pixel by one narrow space
+	b	nextchar_loop
+nextchar_loop_fin:
+	# Put 43 '*' (stop character) bars colors
+	move	$a0, $s1	
+	move 	$a1, $t0
+	jal	_put_color
+	# Barcode line painted
 	
+	# Load a BMP from a sample file
+	la	$a0, loadname
+	la	$a1, image
+	li	$a2, 90122
+	jal 	_load_file
+	
+	# Copy painted line on each row of BMP
 	
 	
 # TODO: 
 # 1. Transform each char in the string to a numerical value 	-- DONE
 # 2. Compute width in pixels 					-- DONE
 # 3. Check if it will fit the 600x50				-- DONE
-# 4. Color one barcode line				
+# 4. Color one barcode line					-- DONE
 	
 	# Go to the exit of the program
 	b 	exit
@@ -155,8 +184,21 @@ main:
 
 # =================================================================================== PROCEDURES
 
+# Copies specified amount of bytes from one adrress to another
+#
+# Arguments: 	$a1: (address of bytes to copy) [byte array address]
+#		$a2: (destination address) [byte arrray address]
+#		$a3: (amount of bytes to copy) [int]
+#
+# Returns:	void
+#
+_mem_copy:
+	
+	
+	
+	
 
-
+.include "_load_file.asm"
 .include "_put_color.asm"
 .include "_init_line.asm"
 .include "_less_or_equal.asm"
@@ -192,7 +234,14 @@ invalid_width:
 	la	$a0, err4	# Set string address for printing
 	jal 	_print_str
 	b	exit		# Go to exit of program
-	
+cannot_read:
+	la	$a0, err5	# Set string address for printing
+	jal 	_print_str
+	b	exit		# Go to exit of program
+error_reading:
+	la	$a0, err6	# Set string address for printing
+	jal 	_print_str
+	b	exit		# Go to exit of program
 # =================================================================================== EXIT
 	
 exit:
