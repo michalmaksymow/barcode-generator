@@ -14,5 +14,5 @@ err4:		.asciiz "\nInvalid barcode width! (will not fit 600x50px)"
 err5:		.asciiz "\nCannot read file 'prepared.bmp'!"
 err6:		.asciiz "\nInvalid amount of chracters read!"
 
-loadname:	.asciiz "prepared.bmp"
+loadname:	.asciiz "util/prepared.bmp"
 filename:	.asciiz "output.bmp"

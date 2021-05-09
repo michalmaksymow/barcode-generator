@@ -170,13 +170,24 @@ nextchar_loop_fin:
 	jal 	_load_file
 	
 	# Copy painted line on each row of BMP
+	la	$s0, line
+	la	$s1, image
+	addiu	$s1, $s1, 123	# Offset bmp pointer to first pixel
 	
+	li	$s2, 50
+copy_line:
+	beqz	$s2, copy_line_fin
+	move	$a0, $s0
+	move	$a1, $s1
+	li	$a2, 1800
+	jal	_mem_copy
+	addiu	$s1, $s1, 1800
+	subiu 	$s2, $s2, 1
+	b	copy_line
+copy_line_fin:
 	
-# TODO: 
-# 1. Transform each char in the string to a numerical value 	-- DONE
-# 2. Compute width in pixels 					-- DONE
-# 3. Check if it will fit the 600x50				-- DONE
-# 4. Color one barcode line					-- DONE
+	# Save file
+	
 	
 	# Go to the exit of the program
 	b 	exit
@@ -184,20 +195,7 @@ nextchar_loop_fin:
 
 # =================================================================================== PROCEDURES
 
-# Copies specified amount of bytes from one adrress to another
-#
-# Arguments: 	$a1: (address of bytes to copy) [byte array address]
-#		$a2: (destination address) [byte arrray address]
-#		$a3: (amount of bytes to copy) [int]
-#
-# Returns:	void
-#
-_mem_copy:
-	
-	
-	
-	
-
+.include "_mem_copy.asm"
 .include "_load_file.asm"
 .include "_put_color.asm"
 .include "_init_line.asm"
@@ -234,6 +232,8 @@ invalid_width:
 	la	$a0, err4	# Set string address for printing
 	jal 	_print_str
 	b	exit		# Go to exit of program
+
+# File errors
 cannot_read:
 	la	$a0, err5	# Set string address for printing
 	jal 	_print_str
