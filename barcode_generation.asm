@@ -108,7 +108,38 @@ main:
 	# Initialise barcode line to white (each pixel to 0xFF) 
 	la	$a0, line
 	jal	_init_line
-	# Now, whole pixel line is initialised to white
+	# Now, whole pixel line is initialised to white, so
+	# it is time start to put each character bars pixels
+	
+# Paint one barcode line
+# $s0 -> points to currently processed char
+# $s1 -> points to currently processed pixel
+# $s6 -> stores size of one painted char in bytes(px*3) - (3 * wide_bar + 6 * narrow_bar)*3
+# $s7 -> stores size of one space between chars
+	li	$s6, 0
+	lw	$t0, size_px	# $t0 = narrow_bar
+	li 	$t1, 6		
+	mult	$t0, $t1
+	mflo	$t2		# $t2 = 6 * narrow_bar
+	add	$s6, $s6, $t2	# $s6 = 6 * narrow_bar
+	li 	$t1, 3
+	mult	$t0, $t1
+	mflo	$t0		# $t0 = wide_bar
+	mult	$t0, $t1	
+	mflo	$t2		# $t2 = 3 * wide_bar
+	add	$s6, $s6, $t2	# $s6 = 3 * wide_bar + 6 * narrow_bar
+	mult	$s6, $t1
+	mflo	$s6		# (3 * wide_bar + 6 * narrow_bar)*3
+	
+	la 	$s0, encoded	# Point to currently processed char
+	la	$s1, line	# Point to currently processed pixel
+	# Put 43 '*' (start character) bars colors
+	lbu	$t0, ($s0)	# Load value of currently processed char to pass as argument to a function
+	move	$a0, $s1	
+	move 	$a1, $t0
+	jal	_put_color
+	addiu 	$s0, $s0, 1	# Move pointer to process next character 
+	add	$s1, $s1, 2
 	
 	
 	
@@ -116,7 +147,7 @@ main:
 # 1. Transform each char in the string to a numerical value 	-- DONE
 # 2. Compute width in pixels 					-- DONE
 # 3. Check if it will fit the 600x50				-- DONE
-# 4. Start bmp generation					
+# 4. Color one barcode line				
 	
 	# Go to the exit of the program
 	b 	exit
@@ -124,6 +155,9 @@ main:
 
 # =================================================================================== PROCEDURES
 
+
+
+.include "_put_color.asm"
 .include "_init_line.asm"
 .include "_less_or_equal.asm"
 .include "_compute_width.asm"
