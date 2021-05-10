@@ -1,3 +1,7 @@
+#
+# This file contains important elements of program's data section.
+# It was moved to this file in order not to flood the main with text.
+#
 prompt1:	.asciiz	"Please provide width of narrowest bar (in pixels) >"
 prompt2:	.asciiz "\nPlease provide the text to be encoded >"
 

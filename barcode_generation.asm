@@ -1,3 +1,10 @@
+# ------------------------------------------------------------
+# Program that encodes a text using Code39 barcode and outputs
+# a 600 by 50 pixels BMP file containing the barcode.
+# 
+# This program was created for University Course Laboratory
+# Copyright © Michal Maksymów	
+# ------------------------------------------------------------
 .data
 size_px:	.word 	0	# Width of narrowest bar (in pixels)
 input:		.space 	82	# Text to be encoded
