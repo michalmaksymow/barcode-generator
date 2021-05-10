@@ -1,4 +1,8 @@
-Mars4_5.jar
+mars.jar
 
 test/venv/
 test/__pycache__/
+test/.vscode/
+test/tmpout
+
+out/*

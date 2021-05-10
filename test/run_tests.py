@@ -1,6 +1,4 @@
-import cv2 
 import json
-
 from print_colors import pcolors
 from test import Test
 
@@ -17,6 +15,7 @@ def __main__():
 def runTest(test):
     t = Test(test)
     t.run()
+    t.compare()
     
 
 def loadTests():

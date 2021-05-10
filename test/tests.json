@@ -6,7 +6,6 @@
             "text": "ECOAR2021"
         },
         "expected": {
-            "errors": false,
             "checksum": 92,
             "checksymbol": 6,
             "width": 382,
@@ -20,7 +19,6 @@
             "text": "MIPS"
         },
         "expected": {
-            "errors": false,
             "checksum": 93,
             "checksymbol": 7,
             "width": 444,
