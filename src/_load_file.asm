@@ -1,4 +1,3 @@
-#
 # Load contents of a file
 #
 # Arguments:	$a0: (filename) [string address]
@@ -6,7 +5,7 @@
 #		$a2: (number of characters to read) [int]
 #
 # Returns:	none
-#
+
 _load_file:
 # $t0 -> Stores filename address
 # $t1 -> Stores address of input buffer

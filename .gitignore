@@ -1,8 +1,11 @@
+# Simulator
 mars.jar
 
+# Python cache and virtual environment
 test/venv/
 test/__pycache__/
 test/.vscode/
 test/tmpout
 
+# Output files
 out/*

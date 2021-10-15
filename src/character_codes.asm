@@ -1,10 +1,9 @@
-#
 # This byte array stores Code39 character codes.
 # Each 9 bytes represent one character in format:
 # bsbsbsbsb (where "b" - bar, "s" -space)
 # Each value represents width of a bar or space
 # 0 - narrow, 1 - wide
-#
+
 char_codes:	.byte 	0 0 0 1 1 0 1 0 0 
 			1 0 0 1 0 0 0 0 1 
 			0 0 1 1 0 0 0 0 1 

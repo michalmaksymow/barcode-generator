@@ -1,11 +1,10 @@
-#	
 # Checks if a string contains any characters that cannot be encoded in Code39
 # Accepted chars: 0-9, A-Z (uppercase), -, ., [whitespace], $, /, +, %
 #
 # Arguments: 	$a0: (address of a buffer in which the string is saved)
 #
 # Returns:	$v0: (1 [true] if string is incorrect) [int] 
-#
+
 _check_incorrect:
 	move	$t0, $a0	# Set address of first char of string to $t0
 	li 	$v0, 0		# Set default return value to 0 (false)

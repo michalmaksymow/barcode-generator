@@ -1,10 +1,9 @@
-#
 # Initialises color of each pixel of one barcode line (600 x 1 px)
 #
 # Arguments: 	$a0: (line colors) [byte array address]
 #
 # Returns:	void
-#
+
 _init_line:
 # $t0 -> points at a line pixel
 # $t6 -> auxiliary 

@@ -1,4 +1,3 @@
-#
 # Copies specified amount of bytes from one adrress to another
 #
 # Arguments: 	$a0: (address of bytes to copy) [byte array address]
@@ -6,7 +5,7 @@
 #		$a2: (amount of bytes to copy) [int]
 #
 # Returns:	void
-#
+
 _mem_copy:
 	move	$t0, $a0
 	move	$t1, $a1

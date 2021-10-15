@@ -1,10 +1,9 @@
-#
 # Checks if a string is empty
 #
 # Arguments: 	$a0: (address of a buffer in which the string is saved) 
 #
 # Returns:	$v0 (1 [true] if string is empty) [int] 
-#
+
 _is_empty:
 	move	$t0, $a0	# Set address of first char of string to $t0
 	lbu	$t1, ($t0)	# Copy first character to $t1 (first eight effective bits)

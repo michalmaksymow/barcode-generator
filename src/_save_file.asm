@@ -1,4 +1,3 @@
-#
 # Saves content to a file
 #
 # Arguments:	$a0: (filename) [string address]
@@ -6,7 +5,7 @@
 #		$a2: (number of characters to write) [int]
 #
 # Returns:	none
-#
+
 _save_file:
 	move	$t0, $a0	# Save filename in $t0
 	move	$t1, $a1	# Save address of input buffer in $t1

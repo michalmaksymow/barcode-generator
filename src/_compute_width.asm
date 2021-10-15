@@ -1,11 +1,10 @@
-#
 # Computes barcode's expected final width
 #
 # Arguments: 	$a0: (address of an encoded string) [byte array address]
 #		$a1: (size of narrow bar) [int]
 #
 # Returns:	$v0: (size of barcode) [int]
-#
+
 _compute_width:
 # $t0 -> points at byte of a encoded string
 # $t1 -> narrow bar size in px

@@ -1,10 +1,9 @@
-#
 # Computes (Code39) checksum of a given string
 #
 # Arguments: 	$a0: (address of a string used in computation)
 #
 # Returns:	$v0: (checksum) [int]
-#
+
 _compute_checksum:
 	move	$t0, $a0	# Set address of first char of string to $t0
 	li	$v0, 0		# Set return value to zero (temporary)

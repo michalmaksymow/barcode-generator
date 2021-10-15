@@ -1,11 +1,10 @@
-#
 # Puts colors of one character value on barcode line, starting at specified address
 #
 # Arguments: 	$a0 (address at which character value bars should be put) [byte array address]
 # 		$a1 (character value) [int]
 #
 # Returns:	void
-#
+
 _put_color:
 # $t0 -> points at currently processed pixel
 # $t1 -> points at current bar in charcodes array

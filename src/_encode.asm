@@ -1,11 +1,10 @@
-#
 # Encodes provided string with Code39 values
 #
 # Arguments: 	$a0: (address of a string to be encoded)
 #		$a1: (address of output byte array)
 #
 # Returns:	void
-#
+
 _encode:	
 # $t0 -> points at char of a string being encoded
 # $t1 -> points at byte of encoded values array

@@ -1,11 +1,10 @@
-#
 # Returns true (1) if $a0 <= $a1 
 #
 # Arguments: 	$a0: (first number) [int]
 #		$a1: (second number) [int]
 #
 # Returns:	$v0: ($a0 <= $a1 ? 1 : 0) [int]
-#
+
 _less_or_equal:
 	move	$t0, $a0 	# Copy value
 	move	$t1, $a1	# Copy value
