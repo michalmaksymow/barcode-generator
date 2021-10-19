@@ -4,7 +4,14 @@ Project for my university course in which the task was to build a program in MIP
 
 ## Usage
 
-To run the program, you need to obtain the Mars simulator (an integrated environment for running MIPS assembly written in java) available [here](http://courses.missouristate.edu/kenvollmar/mars/download.htm).
+In order to run the program, you need to follow these instructions:
+
+1. Obtain the Mars simulator (an integrated environment for running MIPS assembly written in java) available [here](http://courses.missouristate.edu/kenvollmar/mars/download.htm).
+2. Run the mars simulator.
+3. Open the file `src/barcode_generation.asm`.
+4. Compile and run.
+5. (Alternatively, instead of running the program in gui mode, one may run it through the console by issuing command
+   `java -jar Mars4_5.jar src/barcode_generation.asm`).
 
 ### TODO:
 
