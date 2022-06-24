@@ -15,6 +15,4 @@ In order to run the program, you need to follow these instructions:
 
 ### TODO:
 
-- Finish tests to work correctly
 - Write a nice README.md
-- Make the project open-source
