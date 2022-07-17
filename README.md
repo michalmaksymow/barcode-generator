@@ -13,7 +13,3 @@ In order to run the program, you need to follow these instructions:
 5. (Alternatively, instead of running the program in gui mode, one may run it through the console by issuing command
    `java -jar Mars4_5.jar src/barcode_generation.asm`).
 6. Generated file will be located in `out/output.bmp`.
-
-### TODO:
-
-- Write a nice README.md
