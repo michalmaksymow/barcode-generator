@@ -1,6 +1,6 @@
 # 📝 Assembly barcode generator (code39 specification)
 
-Project for my university course in which the task was to build a program in MIPS assembly. The program had to generate a bitmap (.bmp file) containing a correct barcode (according to [code39 specification](https://en.wikipedia.org/wiki/Code_39)) based on a provided string of characters and the width of the narrow bar.
+Project for my university course in which the task was to build a program in MIPS assembly that will encode a provided string in form of a barcode. The program had to generate a bitmap (.bmp file) containing a correctly encoded barcode (according to [code39 specification](https://en.wikipedia.org/wiki/Code_39)) based on a provided string of characters and the pixel width of the narrow bar.
 
 ## Usage
 
@@ -13,3 +13,7 @@ In order to run the program, you need to follow these instructions:
 5. (Alternatively, instead of running the program in gui mode, one may run it through the console by issuing command
    `java -jar Mars4_5.jar src/barcode_generation.asm`).
 6. Generated file will be located in `out/output.bmp`.
+
+## License
+
+[MIT](https://en.wikipedia.org/wiki/MIT_License)
